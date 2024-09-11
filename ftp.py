@@ -174,21 +174,35 @@ def save_connection():
     else:
         messagebox.showwarning("Save Connection", "Please fill in all fields")
 
-def load_connection():
-    name = connection_name_entry.get()
-    if name in saved_connections:
-        connection = saved_connections[name]
-        host_entry.delete(0, tk.END)
-        host_entry.insert(0, connection['host'])
-        port_entry.delete(0, tk.END)
-        port_entry.insert(0, connection['port'])
-        user_entry.delete(0, tk.END)
-        user_entry.insert(0, connection['user'])
-        password_entry.delete(0, tk.END)
-        password_entry.insert(0, connection['password'])
-        messagebox.showinfo("Load Connection", f"Connection '{name}' loaded successfully")
-    else:
-        messagebox.showwarning("Load Connection", f"Connection '{name}' not found")
+def load_connection_dialog():
+    if not saved_connections:
+        messagebox.showwarning("Load Connection", "No saved connections found")
+        return
+
+    dialog = tk.Toplevel(root)
+    dialog.title("Load Connection")
+
+    listbox = tk.Listbox(dialog, width=50, height=10)
+    listbox.pack(padx=10, pady=10)
+
+    for name in saved_connections:
+        listbox.insert(tk.END, name)
+
+    def on_double_click(event):
+        selected_name = listbox.get(listbox.curselection())
+        if selected_name:
+            connection = saved_connections[selected_name]
+            host_entry.delete(0, tk.END)
+            host_entry.insert(0, connection['host'])
+            port_entry.delete(0, tk.END)
+            port_entry.insert(0, connection['port'])
+            user_entry.delete(0, tk.END)
+            user_entry.insert(0, connection['user'])
+            password_entry.delete(0, tk.END)
+            password_entry.insert(0, connection['password'])
+            dialog.destroy()
+
+    listbox.bind("<Double-Button-1>", on_double_click)
 
 # Загружаем сохраненные соединения
 load_connections()
@@ -198,10 +212,6 @@ root = ttk.Window(themename="cosmo")
 root.title("FTP Client")
 
 # Создаем и размещаем элементы интерфейса
-ttk.Label(root, text="Connection Name:").grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
-connection_name_entry = ttk.Entry(root, width=30)
-connection_name_entry.grid(row=0, column=1, padx=10, pady=10)
-
 ttk.Label(root, text="Host:").grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
 host_entry = ttk.Entry(root, width=30)
 host_entry.grid(row=1, column=1, padx=10, pady=10)
@@ -225,7 +235,7 @@ connect_button.grid(row=5, column=0, columnspan=2, padx=10, pady=20)
 save_connection_button = ttk.Button(root, text="Save Connection", command=save_connection, bootstyle=PRIMARY)
 save_connection_button.grid(row=9, column=0, padx=10, pady=10)
 
-load_connection_button = ttk.Button(root, text="Load Connection", command=load_connection, bootstyle=PRIMARY)
+load_connection_button = ttk.Button(root, text="Load Connection", command=load_connection_dialog, bootstyle=PRIMARY)
 load_connection_button.grid(row=9, column=1, padx=10, pady=10)
 
 # Контейнер для списка файлов

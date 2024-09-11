@@ -1,4 +1,5 @@
 import ftplib
+import os
 import tkinter as tk
 from tkinter import messagebox
 import ttkbootstrap as ttk
@@ -125,16 +126,23 @@ def download_file():
     selected_file = file_list.get(file_list.curselection())
     if selected_file:
         try:
-            with open(selected_file, 'wb') as local_file:
+            # Создаем папку download, если она не существует
+            if not os.path.exists('download'):
+                os.makedirs('download')
+            
+            # Путь для сохранения файла
+            local_file_path = os.path.join('download', selected_file)
+            
+            with open(local_file_path, 'wb') as local_file:
                 ftp.retrbinary(f'RETR {selected_file}', local_file.write)
             messagebox.showinfo("Download", f"File {selected_file} downloaded successfully")
-            open_file(selected_file)
+            open_file(local_file_path, current_directory, selected_file)
         except ftplib.all_errors as e:
             messagebox.showerror("Download Error", f"Download error: {e}")
     else:
         messagebox.showwarning("No File Selected", "Please select a file to download")
 
-def open_file(filename):
+def open_file(filename, original_directory, original_file_path):
     try:
         with open(filename, 'r', encoding='utf-8') as file:
             content = file.read()
@@ -142,27 +150,64 @@ def open_file(filename):
         edit_window = tk.Toplevel(root)
         edit_window.title(f"Editing {filename}")
         
-        text_area = tk.Text(edit_window, wrap='word', width=80, height=20)
-        text_area.pack(padx=10, pady=10)
+        # Устанавливаем размер окна на 80% ширины и 100% высоты экрана
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        edit_window_width = int(screen_width * 0.8)
+        edit_window.geometry(f"{edit_window_width}x{screen_height}")
+        
+        text_area = tk.Text(edit_window, wrap='word', width=80, height=40, font=("Arial", 12))  # Увеличиваем размер текста
+        text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
         text_area.insert(tk.END, content)
         
-        save_button = ttk.Button(edit_window, text="Save Changes",
-                                 command=lambda: save_file(filename, text_area.get(1.0, tk.END)))
+        def save_changes():
+            new_content = text_area.get(1.0, tk.END)
+            save_file(filename, new_content, original_directory, original_file_path)
+            edit_window.destroy()
+        
+        save_button = ttk.Button(edit_window, text="Save Changes", command=save_changes, bootstyle=PRIMARY)
         save_button.pack(pady=10)
+        
+        # Подсветка изменений
+        def highlight_changes(event=None):
+            new_content = text_area.get(1.0, tk.END)
+            if new_content != content:
+                text_area.tag_remove("changed", "1.0", tk.END)
+                diff_lines = new_content.splitlines()
+                original_lines = content.splitlines()
+                for i, (new_line, original_line) in enumerate(zip(diff_lines, original_lines)):
+                    if new_line != original_line:
+                        start = f"{i+1}.0"
+                        end = f"{i+1}.end"
+                        text_area.tag_add("changed", start, end)
+        
+        text_area.tag_configure("changed", background="#ffe6e6")  # Легкий красный цвет для подсветки
+        text_area.bind("<KeyRelease>", highlight_changes)
+        highlight_changes()
+        
     except FileNotFoundError:
         messagebox.showerror("File Error", f"The file {filename} does not exist.")
     except UnicodeDecodeError:
         messagebox.showerror("File Error", f"The file {filename} is not a text file or contains unsupported characters.")
 
-def save_file(filename, content):
+def save_file(filename, content, original_directory, original_file_path):
     try:
+        # Сохраняем изменения в локальный файл
         with open(filename, 'w', encoding='utf-8') as file:
             file.write(content)
         
-        with open(filename, 'rb') as file:
-            ftp.storbinary(f'STOR {filename}', file)
+        # Переходим в исходную директорию
+        ftp.cwd(original_directory)
         
-        messagebox.showinfo("Save", f"File {filename} saved successfully")
+        # Выгружаем файл на сервер
+        with open(filename, 'rb') as file:
+            ftp.storbinary(f'STOR {original_file_path}', file)
+        
+        messagebox.showinfo("Save", f"File {original_file_path} saved successfully")
+        
+        # Удаляем файл из папки download после успешной выгрузки
+        os.remove(filename)
+        messagebox.showinfo("File Removed", f"File {filename} removed from download folder")
     except ftplib.all_errors as e:
         messagebox.showerror("Save Error", f"Save error: {e}")
 

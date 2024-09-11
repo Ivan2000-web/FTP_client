@@ -89,7 +89,13 @@ def update_file_list():
             messagebox.showinfo("No Files", "No files found on the server")
         else:
             for file in files:
-                file_list.insert(tk.END, file)
+                try:
+                    ftp.cwd(file)
+                    ftp.cwd("..")
+                    file_list.insert(tk.END, file)
+                    file_list.itemconfig(tk.END, {'bg': '#dbffc4'})  # Выделяем папки зеленым цветом
+                except ftplib.error_perm:
+                    file_list.insert(tk.END, file)
     except ftplib.all_errors as e:
         messagebox.showerror("Directory Error", f"Error listing directory: {e}")
 

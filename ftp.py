@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+from itertools import zip_longest
 import json
 
 # Словарь для хранения сохраненных соединений
@@ -150,11 +151,8 @@ def open_file(filename, original_directory, original_file_path):
         edit_window = tk.Toplevel(root)
         edit_window.title(f"Editing {filename}")
         
-        # Устанавливаем размер окна на 80% ширины и 100% высоты экрана
-        screen_width = root.winfo_screenwidth()
-        screen_height = root.winfo_screenheight()
-        edit_window_width = int(screen_width * 0.8)
-        edit_window.geometry(f"{edit_window_width}x{screen_height}")
+        # Открываем окно на весь экран
+        edit_window.state('zoomed')
         
         text_area = tk.Text(edit_window, wrap='word', width=80, height=40, font=("Arial", 12))  # Увеличиваем размер текста
         text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
@@ -166,7 +164,7 @@ def open_file(filename, original_directory, original_file_path):
             edit_window.destroy()
         
         save_button = ttk.Button(edit_window, text="Save Changes", command=save_changes, bootstyle=PRIMARY)
-        save_button.pack(pady=10)
+        save_button.pack(side=tk.BOTTOM, pady=10)  # Размещаем кнопку внизу окна
         
         # Подсветка изменений
         def highlight_changes(event=None):
@@ -175,7 +173,7 @@ def open_file(filename, original_directory, original_file_path):
                 text_area.tag_remove("changed", "1.0", tk.END)
                 diff_lines = new_content.splitlines()
                 original_lines = content.splitlines()
-                for i, (new_line, original_line) in enumerate(zip(diff_lines, original_lines)):
+                for i, (new_line, original_line) in enumerate(zip_longest(diff_lines, original_lines, fillvalue='')):
                     if new_line != original_line:
                         start = f"{i+1}.0"
                         end = f"{i+1}.end"
@@ -184,6 +182,8 @@ def open_file(filename, original_directory, original_file_path):
         text_area.tag_configure("changed", background="#ffe6e6")  # Легкий красный цвет для подсветки
         text_area.bind("<KeyRelease>", highlight_changes)
         highlight_changes()
+        
+        edit_window.update_idletasks()  # Принудительно обновляем окно
         
     except FileNotFoundError:
         messagebox.showerror("File Error", f"The file {filename} does not exist.")

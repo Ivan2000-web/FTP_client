@@ -6,6 +6,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from itertools import zip_longest
 import json
+import time
 
 # Словарь для хранения сохраненных соединений
 saved_connections = {}
@@ -295,9 +296,40 @@ def load_connection_dialog():
 # Загружаем сохраненные соединения
 load_connections()
 
+# Создаем окно приветствия
+def show_splash_screen():
+    splash_window = tk.Toplevel(root)
+    splash_window.title("Splash Screen")
+    splash_window.geometry("500x200")
+    splash_window.configure(bg="white")
+    splash_window.overrideredirect(True)  # Убираем рамку окна
+
+    # Центрируем окно на экране
+    splash_window.update_idletasks()
+    width = splash_window.winfo_width()
+    height = splash_window.winfo_height()
+    x = (splash_window.winfo_screenwidth() // 2) - (width // 2)
+    y = (splash_window.winfo_screenheight() // 2) - (height // 2)
+    splash_window.geometry(f"{width}x{height}+{x}+{y}")
+
+    # Добавляем текст
+    label = tk.Label(splash_window, text="MADE BY IVAN POTVOROV", font=("Arial", 24), bg="white")
+    label.pack(pady=40)
+
+    # Закрываем окно через 2 секунды
+    splash_window.after(2000, splash_window.destroy)
+
+    return splash_window  
+
 # Создаем главное окно
 root = ttk.Window(themename="cosmo")
 root.title("FTP Client")
+
+# Показываем окно приветствия
+splash_window = show_splash_screen() 
+
+# Дожидаемся закрытия окна приветствия перед запуском главного цикла обработки событий
+root.wait_window(splash_window)
 
 # Создаем и размещаем элементы интерфейса
 ttk.Label(root, text="Host:").grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)

@@ -23,16 +23,21 @@ def save_connections():
 def connect_to_ftp():
     global ftp, current_directory
     host = host_entry.get()
-    port = int(port_entry.get())
+    port = port_entry.get()
     user = user_entry.get()
     password = password_entry.get()
+
+    # Проверка на пустые поля
+    if not host or not port or not user or not password:
+        messagebox.showerror("Input Error", "Please fill in all fields")
+        return
 
     try:
         # Создаем объект FTP_TLS
         ftp = ftplib.FTP_TLS()
         
         # Подключаемся к серверу
-        ftp.connect(host, port)
+        ftp.connect(host, int(port))
         messagebox.showinfo("Connection", f"Connection to {host}:{port} successfully")
         
         # Входим в систему

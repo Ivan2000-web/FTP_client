@@ -276,6 +276,20 @@ def load_connection_dialog():
             password_entry.insert(0, connection['password'])
             dialog.destroy()
 
+    def delete_connection():
+        selected_name = listbox.get(listbox.curselection())
+        if selected_name:
+            if messagebox.askyesno("Delete Connection", f"Are you sure you want to delete '{selected_name}'?"):
+                del saved_connections[selected_name]
+                save_connections()
+                messagebox.showinfo("Delete Connection", f"Connection '{selected_name}' deleted successfully")
+                listbox.delete(tk.ACTIVE)
+        else:
+            messagebox.showwarning("Delete Connection", "Please select a connection to delete")
+
+    delete_button = ttk.Button(dialog, text="Delete Connection", command=delete_connection, bootstyle=DANGER)
+    delete_button.pack(pady=10)
+
     listbox.bind("<Double-Button-1>", on_double_click)
 
 # Загружаем сохраненные соединения

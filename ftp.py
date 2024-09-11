@@ -161,23 +161,41 @@ def save_file(filename, content):
         messagebox.showerror("Save Error", f"Save error: {e}")
 
 def save_connection():
-    name = connection_name_entry.get()
     host = host_entry.get()
     port = port_entry.get()
     user = user_entry.get()
     password = password_entry.get()
 
-    if name and host and port and user and password:
-        saved_connections[name] = {
-            'host': host,
-            'port': port,
-            'user': user,
-            'password': password
-        }
-        save_connections()
-        messagebox.showinfo("Save Connection", f"Connection '{name}' saved successfully")
-    else:
-        messagebox.showwarning("Save Connection", "Please fill in all fields")
+    # Проверка на пустые поля
+    if not host or not port or not user or not password:
+        messagebox.showerror("Input Error", "Please fill in all fields")
+        return
+
+    # Создаем окно для ввода имени соединения
+    save_dialog = tk.Toplevel(root)
+    save_dialog.title("Save Connection")
+
+    ttk.Label(save_dialog, text="Connection Name:").grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
+    connection_name_entry = ttk.Entry(save_dialog, width=30)
+    connection_name_entry.grid(row=0, column=1, padx=10, pady=10)
+
+    def save_connection_with_name():
+        name = connection_name_entry.get()
+        if name:
+            saved_connections[name] = {
+                'host': host,
+                'port': port,
+                'user': user,
+                'password': password
+            }
+            save_connections()
+            messagebox.showinfo("Save Connection", f"Connection '{name}' saved successfully")
+            save_dialog.destroy()
+        else:
+            messagebox.showwarning("Save Connection", "Please enter a connection name")
+
+    save_button = ttk.Button(save_dialog, text="Save", command=save_connection_with_name, bootstyle=PRIMARY)
+    save_button.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 
 def load_connection_dialog():
     if not saved_connections:

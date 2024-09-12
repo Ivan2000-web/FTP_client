@@ -1,4 +1,3 @@
-import ftplib
 import os
 import tkinter as tk
 from tkinter import messagebox
@@ -7,6 +6,7 @@ from ttkbootstrap.constants import *
 from itertools import zip_longest
 import json
 import time
+import ftplib
 
 # Словарь для хранения сохраненных соединений
 saved_connections = {}
@@ -171,6 +171,9 @@ def open_file(filename, original_directory, original_file_path):
         with open(filename, 'r', encoding='utf-8') as file:
             content = file.read()
         
+        # Сохраняем первоначальное состояние файла (до изменений в папку before_changes)
+        save_original_state(filename)
+        
         edit_window = tk.Toplevel(root)
         edit_window.title(f"Editing {filename}")
         
@@ -213,6 +216,18 @@ def open_file(filename, original_directory, original_file_path):
     except UnicodeDecodeError:
         messagebox.showerror("File Error", f"The file {filename} is not a text file or contains unsupported characters.")
 
+#Сохраняем файл в папке before_changes перед открытием его на редактирование
+def save_original_state(filename):
+    if not os.path.exists('before_changes'):
+        os.makedirs('before_changes')
+    
+    original_file_path = os.path.join('before_changes', os.path.basename(filename))
+    with open(filename, 'r', encoding='utf-8') as original_file:
+        original_content = original_file.read()
+    
+    with open(original_file_path, 'w', encoding='utf-8') as original_file:
+        original_file.write(original_content)
+
 def save_file(filename, content, original_directory, original_file_path):
     try:
         # Сохраняем изменения в локальный файл
@@ -228,9 +243,10 @@ def save_file(filename, content, original_directory, original_file_path):
         
         messagebox.showinfo("Save", f"File {original_file_path} saved successfully")
         
-        # Удаляем файл из папки download после успешной выгрузки
+        # Удаляем файл из папки download после успешной выгрузки (из папки before_changes не удаляем)
         os.remove(filename)
         messagebox.showinfo("File Removed", f"File {filename} removed from download folder")
+    
     except ftplib.all_errors as e:
         messagebox.showerror("Save Error", f"Save error: {e}")
 

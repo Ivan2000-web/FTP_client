@@ -72,9 +72,10 @@ def connect_to_ftp():
         load_connection_button.grid_forget()
 
         # Показываем список файлов и кнопки
-        file_list_container.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
-        download_button.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
-        disconnect_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
+        file_list_container.grid(row=1, column=0, columnspan=3, padx=10, pady=10)
+        download_button.grid(row=2, column=0, padx=5, pady=10)
+        disconnect_button.grid(row=2, column=1, padx=5, pady=10)
+        delete_button.grid(row=2, column=2, padx=5, pady=10)  # Добавляем кнопку удаления
     
     except ftplib.all_errors as e:
         messagebox.showerror("Connection Error", f"Connection error: {e}")
@@ -88,6 +89,7 @@ def disconnect_from_ftp():
         file_list_container.grid_forget()
         download_button.grid_forget()
         disconnect_button.grid_forget()
+        delete_button.grid_forget()  # Скрываем кнопку удаления
 
         # Показываем поля для ввода соединения и кнопку connect
         host_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
@@ -398,9 +400,12 @@ style.map("Connect.TButton",
          background=[('active', 'yellow'), ('!active', 'lightgreen')],
          foreground=[('active', 'black'), ('!active', 'black')])
 
-
 style.configure("Save.TButton", font=("Arial", 10), padding=10, width=20)
 style.configure("Load.TButton", font=("Arial", 10), padding=10, width=20)
+style.configure("Delete.TButton", background="red", foreground="white", font=("Arial", 10), padding=10, width=20)
+style.map("Delete.TButton",
+         background=[('active', 'darkred'), ('!active', 'red')],
+         foreground=[('active', 'white'), ('!active', 'white')])
 
 connect_button = ttk.Button(root, text="Connect", command=connect_to_ftp, style="Connect.TButton")
 connect_button.grid(row=5, column=0, columnspan=2, padx=10, pady=20)
@@ -429,6 +434,26 @@ disconnect_button = ttk.Button(root, text="Disconnect", command=disconnect_from_
 go_back_icon = tk.Label(file_list_container, text="back", cursor="hand2", font=("Arial", 12))
 go_back_icon.pack(side=tk.LEFT, padx=5)
 go_back_icon.bind("<Button-1>", lambda e: go_back())
+
+# Кнопка для удаления файла или папки
+def delete_file_or_directory():
+    selected_item = file_list.get(file_list.curselection())
+    if selected_item:
+        if messagebox.askyesno("Delete Confirmation", f"Are you sure you want to delete '{selected_item}'?"):
+            try:
+                ftp.delete(selected_item)  # Удаляем файл
+                messagebox.showinfo("Delete", f"File {selected_item} deleted successfully")
+            except ftplib.error_perm:
+                try:
+                    ftp.rmd(selected_item)  # Удаляем папку
+                    messagebox.showinfo("Delete", f"Directory {selected_item} deleted successfully")
+                except ftplib.all_errors as e:
+                    messagebox.showerror("Delete Error", f"Error deleting {selected_item}: {e}")
+            update_file_list()
+    else:
+        messagebox.showwarning("No Item Selected", "Please select a file or directory to delete")
+
+delete_button = ttk.Button(root, text="Delete", command=delete_file_or_directory, style="Delete.TButton")
 
 # Запускаем главный цикл обработки событий
 root.mainloop()

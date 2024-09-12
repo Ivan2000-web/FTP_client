@@ -56,14 +56,25 @@ def connect_to_ftp():
         # Получаем список файлов и директорий
         update_file_list()
         
-        # Показываем список файлов и кнопки
-        file_list_container.grid(row=6, column=0, columnspan=2, padx=10, pady=10)
-        download_button.grid(row=7, column=0, columnspan=2, padx=10, pady=10)
-        disconnect_button.grid(row=8, column=0, columnspan=2, padx=10, pady=10)
+        # Скрываем поля для ввода соединения и кнопку connect
+        host_label.grid_forget()
+        host_entry.grid_forget()
+        port_label.grid_forget()
+        port_entry.grid_forget()
+        user_label.grid_forget()
+        user_entry.grid_forget()
+        password_label.grid_forget()
+        password_entry.grid_forget()
+        connect_button.grid_forget()
         
         # Скрываем кнопки "Save Connection" и "Load Connection"
         save_connection_button.grid_forget()
         load_connection_button.grid_forget()
+
+        # Показываем список файлов и кнопки
+        file_list_container.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+        download_button.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+        disconnect_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
     
     except ftplib.all_errors as e:
         messagebox.showerror("Connection Error", f"Connection error: {e}")
@@ -77,10 +88,21 @@ def disconnect_from_ftp():
         file_list_container.grid_forget()
         download_button.grid_forget()
         disconnect_button.grid_forget()
-        
+
+        # Показываем поля для ввода соединения и кнопку connect
+        host_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
+        host_entry.grid(row=1, column=1, padx=10, pady=10)
+        port_label.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
+        port_entry.grid(row=2, column=1, padx=10, pady=10)
+        user_label.grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
+        user_entry.grid(row=3, column=1, padx=10, pady=10)
+        password_label.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
+        password_entry.grid(row=4, column=1, padx=10, pady=10)
+        connect_button.grid(row=5, column=0, columnspan=2, padx=10, pady=20)
+
         # Показываем кнопки "Save Connection" и "Load Connection"
-        save_connection_button.grid(row=9, column=0, padx=10, pady=10)
-        load_connection_button.grid(row=9, column=1, padx=10, pady=10)
+        save_connection_button.grid(row=6, column=0, padx=10, pady=10)
+        load_connection_button.grid(row=6, column=1, padx=10, pady=10)
 
 def update_file_list():
     global current_directory
@@ -258,7 +280,7 @@ def load_connection_dialog():
     dialog.title("Load Connection")
 
     listbox = tk.Listbox(dialog, width=50, height=10)
-    listbox.pack(padx=10, pady=10)
+    listbox.pack(padx=8, pady=8)
 
     for name in saved_connections:
         listbox.insert(tk.END, name)
@@ -332,20 +354,24 @@ splash_window = show_splash_screen()
 root.wait_window(splash_window)
 
 # Создаем и размещаем элементы интерфейса
-ttk.Label(root, text="Host:").grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
+host_label = ttk.Label(root, text="Host:")
+host_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
 host_entry = ttk.Entry(root, width=30)
 host_entry.grid(row=1, column=1, padx=10, pady=10)
 
-ttk.Label(root, text="Port:").grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
+port_label = ttk.Label(root, text="Port:")
+port_label.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
 port_entry = ttk.Entry(root, width=30)
 port_entry.grid(row=2, column=1, padx=10, pady=10)
 port_entry.insert(0, "21")  # Устанавливаем значение по умолчанию
 
-ttk.Label(root, text="User:").grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
+user_label = ttk.Label(root, text="User:")
+user_label.grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
 user_entry = ttk.Entry(root, width=30)
 user_entry.grid(row=3, column=1, padx=10, pady=10)
 
-ttk.Label(root, text="Password:").grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
+password_label = ttk.Label(root, text="Password:")
+password_label.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
 password_entry = ttk.Entry(root, width=30, show="*")
 password_entry.grid(row=4, column=1, padx=10, pady=10)
 
@@ -353,14 +379,14 @@ connect_button = ttk.Button(root, text="Connect", command=connect_to_ftp, bootst
 connect_button.grid(row=5, column=0, columnspan=2, padx=10, pady=20)
 
 save_connection_button = ttk.Button(root, text="Save Connection", command=save_connection, bootstyle=PRIMARY)
-save_connection_button.grid(row=9, column=0, padx=10, pady=10)
+save_connection_button.grid(row=6, column=0, padx=10, pady=10)
 
 load_connection_button = ttk.Button(root, text="Load Connection", command=load_connection_dialog, bootstyle=PRIMARY)
-load_connection_button.grid(row=9, column=1, padx=10, pady=10)
+load_connection_button.grid(row=6, column=1, padx=10, pady=10)
 
 # Контейнер для списка файлов
 file_list_container = tk.Frame(root)
-file_list = tk.Listbox(file_list_container, width=50, height=10)
+file_list = tk.Listbox(file_list_container, width=100, height=25)
 file_list.pack(padx=10, pady=10)
 
 # Обработчик двойного щелчка для изменения директории

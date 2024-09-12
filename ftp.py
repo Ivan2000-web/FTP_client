@@ -101,8 +101,8 @@ def disconnect_from_ftp():
         connect_button.grid(row=5, column=0, columnspan=2, padx=10, pady=20)
 
         # Показываем кнопки "Save Connection" и "Load Connection"
-        save_connection_button.grid(row=6, column=0, padx=10, pady=10)
-        load_connection_button.grid(row=6, column=1, padx=10, pady=10)
+        save_connection_button.grid(row=6, column=0, padx=10, pady=10, sticky=tk.W)
+        load_connection_button.grid(row=6, column=1, padx=10, pady=10, sticky=tk.E)
 
 def update_file_list():
     global current_directory
@@ -370,52 +370,63 @@ splash_window = show_splash_screen()
 root.wait_window(splash_window)
 
 # Создаем и размещаем элементы интерфейса
-host_label = ttk.Label(root, text="Host:")
+host_label = ttk.Label(root, text="Host:", font=("Arial", 12))
 host_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
-host_entry = ttk.Entry(root, width=30)
+host_entry = ttk.Entry(root, width=30, font=("Arial", 12))
 host_entry.grid(row=1, column=1, padx=10, pady=10)
 
-port_label = ttk.Label(root, text="Port:")
+port_label = ttk.Label(root, text="Port:", font=("Arial", 12))
 port_label.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
-port_entry = ttk.Entry(root, width=30)
+port_entry = ttk.Entry(root, width=30, font=("Arial", 12))
 port_entry.grid(row=2, column=1, padx=10, pady=10)
 port_entry.insert(0, "21")  # Устанавливаем значение по умолчанию
 
-user_label = ttk.Label(root, text="User:")
+user_label = ttk.Label(root, text="User:", font=("Arial", 12))
 user_label.grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
-user_entry = ttk.Entry(root, width=30)
+user_entry = ttk.Entry(root, width=30, font=("Arial", 12))
 user_entry.grid(row=3, column=1, padx=10, pady=10)
 
-password_label = ttk.Label(root, text="Password:")
+password_label = ttk.Label(root, text="Password:", font=("Arial", 12))
 password_label.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
-password_entry = ttk.Entry(root, width=30, show="*")
+password_entry = ttk.Entry(root, width=30, show="*", font=("Arial", 12))
 password_entry.grid(row=4, column=1, padx=10, pady=10)
 
-connect_button = ttk.Button(root, text="Connect", command=connect_to_ftp, bootstyle=SUCCESS)
+# Создаем стили для кнопок
+style = ttk.Style()
+style.configure("Connect.TButton", background="lightgreen", foreground="black", font=("Arial", 10), padding=10, width=16)
+style.map("Connect.TButton",
+         background=[('active', 'yellow'), ('!active', 'lightgreen')],
+         foreground=[('active', 'black'), ('!active', 'black')])
+
+
+style.configure("Save.TButton", font=("Arial", 10), padding=10, width=20)
+style.configure("Load.TButton", font=("Arial", 10), padding=10, width=20)
+
+connect_button = ttk.Button(root, text="Connect", command=connect_to_ftp, style="Connect.TButton")
 connect_button.grid(row=5, column=0, columnspan=2, padx=10, pady=20)
 
-save_connection_button = ttk.Button(root, text="Save Connection", command=save_connection, bootstyle=PRIMARY)
-save_connection_button.grid(row=6, column=0, padx=10, pady=10)
+save_connection_button = ttk.Button(root, text="Save Connection", command=save_connection, style="Save.TButton")
+save_connection_button.grid(row=6, column=0, padx=10, pady=10, sticky=tk.W)
 
-load_connection_button = ttk.Button(root, text="Load Connection", command=load_connection_dialog, bootstyle=PRIMARY)
-load_connection_button.grid(row=6, column=1, padx=10, pady=10)
+load_connection_button = ttk.Button(root, text="Load Connection", command=load_connection_dialog, style="Load.TButton")
+load_connection_button.grid(row=6, column=1, padx=10, pady=10, sticky=tk.E)
 
 # Контейнер для списка файлов
 file_list_container = tk.Frame(root)
-file_list = tk.Listbox(file_list_container, width=100, height=25)
+file_list = tk.Listbox(file_list_container, width=100, height=25, font=("Arial", 12))
 file_list.pack(padx=10, pady=10)
 
 # Обработчик двойного щелчка для изменения директории
 file_list.bind("<Double-Button-1>", change_directory)
 
 # Кнопка для скачивания и открытия файла
-download_button = ttk.Button(root, text="Download and Edit", command=download_file, bootstyle=PRIMARY)
+download_button = ttk.Button(root, text="Download and Edit", command=download_file, style="Save.TButton")
 
 # Кнопка для отключения от сервера
-disconnect_button = ttk.Button(root, text="Disconnect", command=disconnect_from_ftp, bootstyle=DANGER)
+disconnect_button = ttk.Button(root, text="Disconnect", command=disconnect_from_ftp, style="Connect.TButton")
 
 # Значок для возврата на уровень выше
-go_back_icon = tk.Label(file_list_container, text="back", cursor="hand2")
+go_back_icon = tk.Label(file_list_container, text="back", cursor="hand2", font=("Arial", 12))
 go_back_icon.pack(side=tk.LEFT, padx=5)
 go_back_icon.bind("<Button-1>", lambda e: go_back())
 
